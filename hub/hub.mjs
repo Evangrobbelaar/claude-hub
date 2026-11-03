@@ -353,7 +353,7 @@ async function runTask(repo, issue, thread) {
     }
     ok = result.ok;
     const mins = ((Date.now() - started) / 60e3).toFixed(1);
-    const meta = [cfg.machine, `${mins} min`, result.cost != null ? `$${result.cost.toFixed(2)}` : null].filter(Boolean).join(' · ');
+    const meta = `${cfg.machine} · ${mins} min`;
     body = `${BOT}result ${cfg.machine} ${ok ? 'ok' : 'fail'} -->\n${ok ? '✅ **Done**' : '❌ **Not finished**'} · ${meta}\n\n${result.text}\n\n${pushNote}\n\n${deployNote}`.trim();
   } catch (e) {
     body = `${BOT}result ${cfg.machine} fail -->\n❌ **Hub error** on ${cfg.machine}\n\n\`\`\`\n${String(e.stderr || e.message).slice(-1500)}\n\`\`\``;
