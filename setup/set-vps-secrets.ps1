@@ -17,9 +17,10 @@ function Read-Secret([string]$prompt) {
 # Reading from the clipboard and dropping all whitespace puts the pieces back together.
 function Read-ClipboardToken([string]$what, [string]$prefix, [int]$minLength) {
     Write-Host "Copy the $what (all of it, even if it wraps onto two lines), then press Enter."
-    Write-Host "Or just press Enter without copying anything to keep the one already saved."
-    [void](Read-Host)
-    $tok = ((Get-Clipboard -Raw) -replace '\s', '')
+    Write-Host "Don't paste it here - just press Enter. Press Enter with nothing copied to keep the saved one."
+    # Hidden input, so a token pasted here by mistake is never shown on screen.
+    $typed = (Read-Secret ' ') -replace '\s', ''
+    $tok = if ($typed.StartsWith($prefix) -and $typed.Length -ge $minLength) { $typed } else { ((Get-Clipboard -Raw) -replace '\s', '') }
     Set-Clipboard -Value ' '
     if (-not $tok -or -not $tok.StartsWith($prefix)) { Write-Host "  -> no $what on the clipboard, keeping the saved one."; return '' }
     if ($tok.Length -lt $minLength) { throw "That $what looks cut off ($($tok.Length) characters). Copy all of it and try again." }
