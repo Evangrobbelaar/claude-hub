@@ -306,7 +306,7 @@ function runShell(cmd, cwd) {
     child.stdout.on('data', (d) => (out += d));
     child.stderr.on('data', (d) => (out += d));
     const timer = setTimeout(() => child.kill('SIGKILL'), 20 * 60e3);
-    child.on('close', (code) => { clearTimeout(timer); resolve({ ok: code === 0, out: out.slice(-1500) }); });
+    child.on('close', (code) => { clearTimeout(timer); resolve({ ok: code === 0, code, out: out.slice(-1500) }); });
   });
 }
 
@@ -339,10 +339,15 @@ async function runTask(repo, issue, thread) {
         pushWithRetry(dir, repo.default_branch);
         pushNote = `**Pushed to \`${repo.default_branch}\`:**\n` + commits.reverse()
           .map((l) => `- [\`${l.slice(0, 7)}\`](https://github.com/${fullName}/commit/${l.slice(0, 40)}) ${l.slice(41)}`).join('\n');
-        const deployCmd = cfg.deploy[repo.name];
+        // deployCommand applies to every project; exit code 3 means "nothing to deploy for this one".
+        const deployCmd = cfg.deploy[repo.name] ?? cfg.deployCommand?.replace('{repo}', repo.name);
         if (deployCmd) {
           const d = await runShell(deployCmd, dir);
-          deployNote = d.ok ? '🚀 **Deployed.**' : `⚠️ **Deploy failed:**\n\`\`\`\n${d.out}\n\`\`\``;
+          if (d.ok) deployNote = '🚀 **Live.** Backed up, deployed and health-checked.';
+          else if (d.code !== 3) {
+            result.ok = false;
+            deployNote = `⚠️ **Pushed, but the deploy failed** (the previous version was restored if possible):\n\`\`\`\n${d.out}\n\`\`\``;
+          }
         }
       } catch (e) {
         result.ok = false;

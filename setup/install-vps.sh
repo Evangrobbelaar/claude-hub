@@ -40,6 +40,14 @@ fi
 
 [ -f /etc/claude-hub.env ] || install -m 600 /dev/null /etc/claude-hub.env
 
+# Deploys: the hub may run exactly one root command, the deploy script. What each project deploys
+# is set in /etc/claude-hub/deploy.d/<repo>.conf, which only root can edit.
+install -m 755 -o root -g root "$HUB_DIR/setup/hub-deploy.sh" /usr/local/sbin/hub-deploy
+install -d -m 700 /etc/claude-hub/deploy.d
+echo "$HUB_USER ALL=(root) NOPASSWD: /usr/local/sbin/hub-deploy" > /etc/sudoers.d/claude-hub
+chmod 440 /etc/sudoers.d/claude-hub
+visudo -cf /etc/sudoers.d/claude-hub >/dev/null
+
 cat > /etc/systemd/system/claude-hub.service <<EOF
 [Unit]
 Description=Claude Hub worker (runs instructions sent from the phone app)
