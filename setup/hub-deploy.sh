@@ -99,6 +99,7 @@ fi
 echo "== health check"
 if wait_healthy; then
   echo "live ✓"
+  docker image prune -f >/dev/null 2>&1 || true # old untagged images from rebuilds fill the disk
   exit 0
 fi
 
