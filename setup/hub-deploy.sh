@@ -90,7 +90,7 @@ else
   for p in "${PATHS[@]}"; do
     src="$WORK/$SRC_DIR/$p"
     [ -e "$src" ] || { echo "  skip missing $p"; continue; }
-    if [ -d "$src" ]; then mkdir -p "$DEST/$p"; rsync -rt --checksum --itemize-changes "${ex[@]}" "$src/" "$DEST/$p/" | grep -c '^>' | sed "s|^|  $p: |;s|$| file(s) updated|"
+    if [ -d "$src" ]; then mkdir -p "$DEST/$p"; rsync -rt --checksum --itemize-changes "${ex[@]}" "$src/" "$DEST/$p/" | { grep -c '^>' || true; } | sed "s|^|  $p: |;s|$| file(s) updated|"
     else rsync -t --checksum "$src" "$DEST/$p"; echo "  $p"; fi
   done
   restart
