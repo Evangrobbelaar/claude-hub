@@ -1,0 +1,8 @@
+{
+  "machine": "laptop",
+  "claimDelaySeconds": 180,
+  "localProjects": {
+    "my-project": "C:/Users/me/Desktop/my-project"
+  },
+  "deploy": {}
+}
